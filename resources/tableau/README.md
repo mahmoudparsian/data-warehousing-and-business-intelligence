@@ -25,4 +25,6 @@
 
 ![](./tableau_dashboard_1.png)
 
+![](./tableau_pie_chart_1.jpeg)
+
 
