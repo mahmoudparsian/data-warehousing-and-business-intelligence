@@ -63,3 +63,5 @@ in large databases such as an Enterprise Data Warehouse,
 2. [An Architecture for a Business and Information System](./An_Architecture_for_a_Business_and_Information_System_21_pages.pdf)
 
 3. [SQL for Business Intelligence by LinkedIn](./SQL_for_Business_Intelligence_LinkedIn.md)
+
+4. [Business Intelligence: A Discussion on Platforms, Technologies, and solutions Tutorial](https://www.rcis-conf.com/rcis2013/document/TUTO/Tutorial_6-Slides.pdf)
