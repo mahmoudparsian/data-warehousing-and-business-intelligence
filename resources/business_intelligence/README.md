@@ -1,5 +1,7 @@
 # Business Intelligence
 
+![](./why-business-intelligence-is-crucial.webp)
+
 ## Overview of Business Intelligence
 
 * BI is revolutionizing decision making and
