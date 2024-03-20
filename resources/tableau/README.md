@@ -2,14 +2,15 @@
 
 ![](./tableau_image.png)
 
-* Tableau is a data analysis and  visualization tool
-  that enables users to connect, visualize and share
-  data in an  easy-to-understand and meaningful way.
-  Its user interface  is generally regarded as  more
+* [Tableau](https://www.tableau.com/) is a data 
+  analysis and  visualization tool that enables 
+  users to connect, visualize and share data in an  
+  easy-to-understand and meaningful way. Its user 
+  interface  is generally regarded as  more
   intuitive, with drag-and-drop functionality.
 	
 
-* [Tableau](https://www.tableau.com/)is a software 
+* [Tableau](https://www.tableau.com/) is a software 
   company that offers collaborative data visualization 
   software for organizations working with business 
   information analytics. 
