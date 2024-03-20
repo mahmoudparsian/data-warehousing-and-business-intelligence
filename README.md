@@ -1,5 +1,13 @@
 # data-warehousing-and-business-intelligence
-# 
+
+
+		Where do you store a petabyte of
+		data for  business intelligence?
+		A  data warehouse, that’s where.
+
+
+![](./webdocs/images/data_warehouse_image.png)
+
 
 	OMIS-113: Data Warehousing and Business Intelligence
 	----------------------------------------------------
@@ -15,3 +23,4 @@
 	acquire hands-on  experience  in  building  business 
 	intelligence applications.
 
+![](./webdocs/images/business_intelligence_01.jpeg)
