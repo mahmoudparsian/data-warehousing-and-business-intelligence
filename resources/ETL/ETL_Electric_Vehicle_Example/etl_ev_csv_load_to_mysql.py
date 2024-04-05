@@ -173,6 +173,8 @@ col=::Census_Tract_2020::
 # should establish a connection to the 
 # database using connect().
 
+# exit()
+
 conn = create_db_connection()
 print("conn=::"+str(conn)+"::")
 
