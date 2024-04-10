@@ -13,7 +13,8 @@
 
 #-----------------------------
 # running this program: 
-#      % python3 etl_ev_csv_load_to_mysql.py
+#
+#      % python3 etl_insurace_csv_load_to_mysql.py
 #-----------------------------
 
 # Install packages
@@ -64,7 +65,12 @@ def create_db_connection():
 #------------------------------------
 # define CSV file
 #------------------------------------
-csv_file = "insurance.csv"
+
+# csv_file = "insurance.csv"
+csv_file = sys.argv[1]
+print("csv_file=", csv_file)
+
+
 
 #------------------------------------------------
 # 1. EXTRACT
