@@ -109,6 +109,9 @@ print("df=", df)
 for col in df.columns:
     print("col=::"+col+"::")
 
+#------------------------------------------------
+# 2. Apply Transformations ...
+#------------------------------------------------
 
 # After creating the instance, now you 
 # should establish a connection to the 
@@ -129,7 +132,9 @@ df['bmi_indicator'] = df['bmi'].apply(compute_bmi_indicator)
 df['age_group'] = df['age'].apply(compute_age_group)
 
 
-
+#-------------------
+# some debugging...
+#-------------------
 print("df=", df)
 
 # print all column names
@@ -161,17 +166,11 @@ df.to_sql(db_table_name, conn, if_exists="append")
 # Now go and query for the table results. You will see the data inserted.
 
 """
-ETL_Insurance_Example_with_Transformation (main *) % mysql -h localhost -u root -p
+ % mysql -h localhost -u root -p
 Enter password:
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 35
 Server version: 8.1.0 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2024, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
@@ -212,4 +211,38 @@ mysql> select bmi_indicator, count(*) as count from test.insurance_from_etl2 gro
 3 rows in set (0.01 sec)
 
 mysql>
+
+mysql> select age_group, bmi_indicator, count(*) as total from insurance_from_etl2 group by age_group, bmi_indicator with ROLLUP;
++-----------+---------------+-------+
+| age_group | bmi_indicator | total |
++-----------+---------------+-------+
+| teens     | normal        |    32 |
+| teens     | obese         |    70 |
+| teens     | overweight    |    35 |
+| teens     | NULL          |   137 |
+| working   | normal        |   213 |
+| working   | obese         |   635 |
+| working   | overweight    |   353 |
+| working   | NULL          |  1201 |
+| NULL      | NULL          |  1338 |
++-----------+---------------+-------+
+9 rows in set (0.00 sec)
+
+mysql> select bmi_indicator, age_group, count(*) as total from insurance_from_etl2 group by bmi_indicator, age_group  with ROLLUP;
++---------------+-----------+-------+
+| bmi_indicator | age_group | total |
++---------------+-----------+-------+
+| normal        | teens     |    32 |
+| normal        | working   |   213 |
+| normal        | NULL      |   245 |
+| obese         | teens     |    70 |
+| obese         | working   |   635 |
+| obese         | NULL      |   705 |
+| overweight    | teens     |    35 |
+| overweight    | working   |   353 |
+| overweight    | NULL      |   388 |
+| NULL          | NULL      |  1338 |
++---------------+-----------+-------+
+10 rows in set (0.00 sec)
+
 """
