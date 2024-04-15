@@ -397,7 +397,8 @@ mysql> select country, year, sum(sales)
 
 # CUBE Operation in Snowflake
 
-	What is a Snowflake?
+	snowflake.com : Data Warehousing Solution
+	
 	A single, global platform that powers 
 	the Data Cloud. Snowflake is uniquely 
 	designed to connect businesses globally, 
