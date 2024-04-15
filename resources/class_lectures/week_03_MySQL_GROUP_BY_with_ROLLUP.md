@@ -34,6 +34,8 @@
 	4. MySQL server has supported GROUP BY extension 
 	ROLLUP for sometime now.  
 
+## Example ROLLUP with GROUP BY
+
 Here is an example of how to use ROLLUP with GROUP BY.
 
 ~~~sql
@@ -134,7 +136,8 @@ mysql> SELECT a, b, SUM(c) as SUM
 	it is now difficult to distinguish 
 	whether a  NULL is representing a 
 	
-	   1. regular grouped value OR 
+	   1. regular grouped value 
+	   OR 
 	   2. a super-aggregate value.
 
 
@@ -267,7 +270,8 @@ mysql> SELECT
          IF(GROUPING(a)=1,'All Departments', a) as Department, 
          IF(GROUPING(b)=1, 'All Employees', b) as Employees, 
          SUM(c) as SUM 
-         FROM t1 GROUP BY a,b WITH ROLLUP;
+         FROM t1 
+         GROUP BY a,b WITH ROLLUP;
 +-----------------+---------------+------+
 | Department      | Employees     | SUM  |
 +-----------------+---------------+------+
@@ -290,11 +294,14 @@ mysql> SELECT
 	GROUPING function in MySQL server.
 
 
-# CUBE FUNCTION in MySQL
+# CUBE FUNCTION in MySQL and Snowflake
 
-There is no CUBE function in MySQL.
+* There is no CUBE function in MySQL.
 
-But we can simulate it.
+* Snowflake has a CUBE function
+
+* But we can simulate  CUBE function in MySQL.
+
 
 Consider the following data:
 
@@ -388,7 +395,38 @@ mysql> select country, year, sum(sales)
 7 rows in set (0.01 sec)
 ~~~
 
-# CUBE Operation
+# CUBE Operation in Snowflake
+
+	What is a Snowflake?
+	A single, global platform that powers 
+	the Data Cloud. Snowflake is uniquely 
+	designed to connect businesses globally, 
+	across any type or scale of data and many 
+	different workloads, and unlock seamless 
+	data collaboration.
+	
+~~~sql
+-- snowflake
+select country, year, sum(sales) as total
+       from t2 
+     GROUP BY CUBE (country, year)
+     ORDER BY country, year 
+     NULLS LAST;
+
+    COUNTRY  YEAR    TOTAL
+    -------  ----    -----
+1   CANADA   2020     3
+2   CANADA   2024    20
+3   CANADA   NULL    23
+4   USA      2020     9
+5   USA      2024     7
+6   USA      NULL    16
+7   NULL     2020    12
+8   NULL     2024    27
+9   NULL     NULL    39
+~~~
+
+# CUBE Operation Simulation in MySQL
 
 ~~~sql
 mysql> select country, year, sum(sales) from t2 
