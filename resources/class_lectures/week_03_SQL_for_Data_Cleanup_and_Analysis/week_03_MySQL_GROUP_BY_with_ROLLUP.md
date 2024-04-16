@@ -395,7 +395,7 @@ mysql> select country, year, sum(sales)
 7 rows in set (0.01 sec)
 ~~~
 
-# CUBE Operation in Snowflake
+# CUBE Operation in Snowflake -- Example 1
 
 	snowflake.com : Data Warehousing Solution
 	
@@ -426,6 +426,86 @@ select country, year, sum(sales) as total
 8   NULL     2024    27
 9   NULL     NULL    39
 ~~~
+
+# CUBE Operation in Snowflake -- Example 2
+
+Create some tables and insert some rows.
+
+~~~sql
+CREATE TABLE products (
+   product_id string, 
+   wholesale_price REAL);
+~~~
+
+Insert some rows:
+
+~~~sql
+INSERT INTO products (product_id, wholesale_price) 
+  VALUES 
+    ('TV', 100.00),
+    ('PC', 200.00);
+~~~
+
+CREATE TABLE sales
+
+~~~
+CREATE TABLE sales (
+   product_id string, 
+   price REAL, 
+   quantity INTEGER, 
+   city VARCHAR
+);
+
+~~~
+
+Insert some rows:
+
+~~~sql
+INSERT INTO sales (product_id, price, quantity, city) 
+  VALUES 
+    ('TV', 120.00,  1, 'Cupertino'),
+    ('TV', 130.00,  2, 'Cupertino'),
+    ('TV', 110.00,  1, 'Sunnyvale'),
+    ('TV', 120.00,  1, 'Stanford'),
+    ('TV', 130.00,  1, 'Stanford'),
+    ('PC', 220.00,  1, 'Cupertino'),
+    ('PC', 230.00,  2, 'Cupertino'),
+    ('PC', 210.00,  1, 'Sunnyvale'),
+    ('PC', 220.00,  1, 'Stanford');
+~~~
+
+CUBE Operation:
+
+~~~sql 
+SELECT s.city, 
+       s.product_id, 
+       SUM((s.price - p.wholesale_price) * s.quantity) AS profit 
+ FROM products AS p, 
+      sales AS s
+ WHERE s.product_id = p.product_id
+ GROUP BY CUBE (s.product_id, s.city)
+ ORDER BY s.product_id, s.city 
+ NULLS LAST
+~~~
+
+CUBE Result:
+
+~~~sql
+    CITY        PRODUCT_ID  PROFIT
+1   Cupertino   PC          80
+2   Stanford    PC          20
+3   Sunnyvale   PC          10
+4   NULL        PC         110
+5   Cupertino   TV          80
+6   Stanford    TV          50
+7   Sunnyvale   TV          10
+8   NULL        TV         140
+9   Cupertino   NULL       160
+10  Stanford    NULL        70
+11  Sunnyvale   NULL        20
+12  NULL        NULL       250
+~~~
+
 
 # CUBE Operation Simulation in MySQL
 
