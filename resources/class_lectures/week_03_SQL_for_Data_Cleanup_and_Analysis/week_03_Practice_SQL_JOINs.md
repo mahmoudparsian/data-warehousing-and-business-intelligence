@@ -313,3 +313,60 @@ ON P.song_id = S.song_id
 
 WHERE s.artist = 'Ed Sheeran';
 ~~~
+
+OR
+
+~~~sql
+SELECT u.name
+FROM 
+     users U,
+     plays P,
+     songs S
+WHERE 
+     U.user_id = P.user_id AND
+     P.song_id = S.song_id AND
+     s.artist = 'Ed Sheeran';
+~~~
+
+# Q5: Which users have a premium plan and have played songs on a mobile device?
+
+
+	1. To get this task started, we’re going to merge 
+	   information from the ‘users’ and ‘plays’ tables, 
+	   connecting them with the ‘user_id’ as our linking point.
+	   
+	2. For this journey, an INNER JOIN is our ticket.
+	   It helps us find those exact matches where the 
+	   details in both tables sync up perfectly.
+	   
+	3. But here’s where it gets interesting: we’ll use 
+	   the WHERE clause to fine-tune our search.
+	
+	   We’re looking for the elite group of users who have 
+	   premium access and prefer their beats on the go, 
+	   using their mobiles.
+	
+
+Here is the SQL query:
+
+~~~sql
+SELECT U.name, U.email
+FROM users U
+INNER JOIN plays P
+ON U.user_id = P.user_id
+WHERE U.plan = 'premium'
+AND p.device = 'mobile';
+~~~
+
+OR
+
+~~~sql
+SELECT U.name, U.email
+FROM 
+     users U,
+     plays P
+WHERE
+     U.user_id = P.user_id AND
+     U.plan = 'premium'    AND
+     P.device = 'mobile';
+~~~
