@@ -239,6 +239,38 @@ Output:
 		...     ...
 		
 
+## Q1.5: How many unique songs did each user play?
+
+~~~sql
+     SELECT U.name, COUNT(distinct P.song_id) AS num_of_plays
+        FROM users U
+		     plays P
+        where 
+             U.user_id = P.user_id
+		GROUP BY U.name;
+~~~
+
+How about getting `user_id` in the result
+
+~~~sql
+     SELECT U.name, U.user_id, COUNT(distinct P.song_id) AS num_of_plays
+        FROM users U
+		     plays P
+        where 
+             U.user_id = P.user_id
+		GROUP BY U.name, U.user_id;
+~~~
+
+How about just getting by `user_id` only in the result
+
+~~~sql
+     SELECT U.user_id, COUNT(distinct P.song_id) AS num_of_plays
+        FROM users U
+		     plays P
+        where 
+             U.user_id = P.user_id
+		GROUP BY U.user_id;
+~~~
 
 ## Q2: What are the titles and genres of the songs played by Alice?
 
