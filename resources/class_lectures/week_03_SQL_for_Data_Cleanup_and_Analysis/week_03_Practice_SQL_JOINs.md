@@ -448,6 +448,69 @@ WHERE
      P.device = 'mobile';
 ~~~
 
+## Q6: Prerequisite: INTERSECT Clause
+
+	INTERSECT limits the result from 
+	multiple query blocks to those rows 
+	which are common to all. 
+
+~~~sql
+mysql> TABLE a;
++------+------+
+| m    | n    |
++------+------+
+|    1 |    2 |
+|    2 |    3 |
+|    3 |    4 |
++------+------+
+3 rows in set (0.00 sec)
+
+mysql> TABLE b;
++------+------+
+| m    | n    |
++------+------+
+|    1 |    2 |
+|    1 |    3 |
+|    3 |    4 |
++------+------+
+3 rows in set (0.00 sec)
+
+mysql> TABLE c;
++------+------+
+| m    | n    |
++------+------+
+|    1 |    3 |
+|    1 |    3 |
+|    3 |    4 |
++------+------+
+3 rows in set (0.00 sec)
+~~~
+
+## TABLE a INTERSECT TABLE b
+
+~~~sql
+mysql> TABLE a INTERSECT TABLE b;
++------+------+
+| m    | n    |
++------+------+
+|    1 |    2 |
+|    3 |    4 |
++------+------+
+2 rows in set (0.00 sec)
+~~~
+
+## TABLE a INTERSECT TABLE c
+
+~~~sql
+mysql> TABLE a INTERSECT TABLE c;
++------+------+
+| m    | n    |
++------+------+
+|    3 |    4 |
++------+------+
+1 row in set (0.00 sec)
+~~~
+
 ## Q6: Which songs have been played by both Alice and Bob?
 
 	1. So, identifying the songs that both Alice and Bob 
