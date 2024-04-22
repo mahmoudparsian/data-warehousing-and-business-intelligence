@@ -360,7 +360,52 @@ WHERE
      s.artist = 'Ed Sheeran';
 ~~~
 
-# Q5: Which users have a premium plan and have played songs on a mobile device?
+## Q4: Which songs have not been played by any users?
+
+	1. Let’s dive into discovering which tracks 
+	have NOT yet had the chance to grace anyone’s 
+	playlist.
+
+	2. We’re going to explore the ‘songs’ and ‘plays’ tables, 
+	connecting them through the ‘song_id’.
+
+	3. For this task, we’ll use a LEFT JOIN.
+	
+		If a song doesn’t match with any plays, 
+		it remains empty, indicated by NULL in 
+		the ‘plays’ table columns related to it.
+		
+	4. To highlight these yet-to-be-played tracks, 
+	   we’ll employ the WHERE clause, looking 
+	   specifically for those instances where 
+	   ‘play_id’ is a telling NULL.
+
+	5. What is the case for using LEFT-JOIN:
+
+		Common use cases for LEFT JOIN include: 
+		Displaying all items: When you want to 
+		display all items from the left table, 
+		even if there are NO corresponding items 
+		in the right table. 
+	
+	6. Handling missing data: 
+			When you need to handle situations where 
+			data might be missing or incomplete in 
+			one of the tables.
+
+Here is the SQL query:
+
+~~~sql
+      SELECT S.title, S.artist
+         FROM songs S
+         LEFT JOIN plays P
+         ON s.song_id = p.song_id
+
+         WHERE p.play_id IS NULL;
+~~~
+
+
+## Q5: Which users have a premium plan and have played songs on a mobile device?
 
 
 	1. To get this task started, we’re going to merge 
@@ -401,4 +446,144 @@ WHERE
      U.user_id = P.user_id AND
      U.plan = 'premium'    AND
      P.device = 'mobile';
+~~~
+
+## Q6: Which songs have been played by both Alice and Bob?
+
+	1. So, identifying the songs that both Alice and Bob 
+	   have rocked out to? —
+	
+	2. We’re going to sift through the 
+	  ‘users’, ‘plays’, and ‘songs’ tables, 
+	  using ‘user_id’ and ‘song_id’ as our 
+	  guides to connect the dots.
+
+	3. We’ll stick with an INNER JOIN for this task.
+
+	But that’s just the start. 
+	
+	4. To pinpoint our musical duo, Alice and Bob, 
+	   we’ll bring in the WHERE clause, filtering 
+	   the data to focus exclusively on them.
+
+	5. And here’s where the magic happens: 
+	   we’ll use the INTERSECT operator.
+	
+	6. This tool helps us uncover the songs that 
+	    both Alice and Bob have enjoyed, showing 
+	    us where their musical tastes intersect.
+
+Here is the SQL query:
+
+~~~sql
+SELECT s.title, s.artist
+FROM users u
+INNER JOIN plays p
+ON u.user_id = p.user_id
+INNER JOIN songs s
+ON p.song_id = s.song_id
+WHERE u.name = 'Alice'
+
+INTERSECT
+
+SELECT s.title, s.artist
+FROM users u
+INNER JOIN plays p
+ON u.user_id = p.user_id
+INNER JOIN songs s
+ON p.song_id = s.song_id
+WHERE u.name = 'Bob';
+~~~
+
+OR
+
+~~~sql
+SELECT s.title, s.artist
+FROM users u,
+     plays p,
+     songs s
+WHERE
+      u.user_id = p.user_id  AND
+      p.song_id = s.song_id  AND
+      u.name = 'Alice'
+
+INTERSECT
+
+SELECT s.title, s.artist
+FROM users u,
+     plays p,
+     songs s
+WHERE
+      u.user_id = p.user_id  AND
+      p.song_id = s.song_id  AND
+      u.name = 'Bob';
+~~~
+
+# Q7: Which users have played songs from different genres?
+
+	1. We’ll navigate this by linking the 
+	   ‘users’, ‘plays’, and ‘songs’ tables, 
+	   with ‘user_id’ and ‘song_id’ serving 
+	   as our trusted guides.
+
+	2. An INNER JOIN is our tool of choice here, 
+	   ensuring we only consider rows where the 
+	   connections are clear and consistent across 
+	   all tables involved.
+
+	3. Now, to get a real sense of each user’s musical 
+	   adventure, we’ll organize our data with the 
+	   GROUP BY clause, clustering the information by user.
+	   
+	4. But we’re not stopping there. To identify those 
+	   adventurers who’ve ventured through various musical 
+	   landscapes, we’ll use the HAVING clause.
+	   
+Here is the SQL query:
+
+~~~sql
+--
+-- select with count of genre
+--
+SELECT u.name, u.country, COUNT(DISTINCT s.genre)
+FROM users u
+INNER JOIN plays p
+ON u.user_id = p.user_id
+INNER JOIN songs s
+ON p.song_id = s.song_id
+GROUP BY u.name, u.country
+HAVING COUNT(DISTINCT s.genre) > 1;
+~~~
+
+
+~~~sql
+--
+-- select without count of genre
+--
+SELECT u.name, u.country
+FROM users u
+INNER JOIN plays p
+ON u.user_id = p.user_id
+INNER JOIN songs s
+ON p.song_id = s.song_id
+GROUP BY u.name, u.country
+HAVING COUNT(DISTINCT s.genre) > 1;
+~~~
+
+OR
+
+--
+-- select with count of genre
+--
+SELECT u.name, u.country, COUNT(DISTINCT s.genre)
+FROM users u,
+     plays p,
+     songs s
+WHERE
+      u.user_id = p.user_id  AND
+      p.song_id = s.song_id  
+
+GROUP BY u.name, u.country
+
+HAVING COUNT(DISTINCT s.genre) > 1;
 ~~~
