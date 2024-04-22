@@ -572,6 +572,7 @@ HAVING COUNT(DISTINCT s.genre) > 1;
 
 OR
 
+~~~sql
 --
 -- select with count of genre
 --
