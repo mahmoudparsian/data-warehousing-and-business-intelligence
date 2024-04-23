@@ -157,7 +157,7 @@ mysql> select E.ename, E.dept_id, D.dept_name
 	This table defines users of the music streaming service
 
 	user_id: The unique identifier of the user
-	name: The name of the user
+	user_name: The name of the user
 	email: The email address of the user
 	country: The country where the user is located
 	plan: The subscription plan of the user, either ‘free’ or ‘premium’
@@ -181,7 +181,7 @@ mysql> select E.ename, E.dept_id, D.dept_name
 	play_id: The unique identifier of the play
 	user_id: The user who played the song
 	song_id: The song that was played
-	timestamp: The date and time when the song was played
+	time_stamp: The date and time when the song was played
 	device: The device used to play the song, either ‘mobile’ or ‘desktop’
 
 
@@ -210,72 +210,72 @@ mysql> select E.ename, E.dept_id, D.dept_name
 
 Here is the SQL query:
 
-~~~sql
-     SELECT U.name, COUNT(P.play_id) AS num_of_plays
+~~~sql		
+     SELECT U.user_name, COUNT(P.play_id) AS num_of_plays
         FROM users U
 		INNER JOIN plays P
         ON U.user_id = P.user_id
-		GROUP BY U.name;
+		GROUP BY U.user_name;
 ~~~
 
 OR
 
 ~~~sql
-     SELECT U.name, COUNT(P.play_id) AS num_of_plays
-        FROM users U
+     SELECT U.user_name, COUNT(P.play_id) AS num_of_plays
+        FROM users U,
 		     plays P
         where 
              U.user_id = P.user_id
-		GROUP BY U.name;
+		GROUP BY U.user_name;
 ~~~
 
 Output:
 
-		name    num_of_plays
-		----    ------------
-		Alice   2
-		Bob     7
-		Jane    5
-		...     ...
+		user_name   num_of_plays
+		---------   ------------
+		Alice       2
+		Bob         7
+		Jane        5
+		...         ...
 		
 
-## Q1.5: How many unique songs did each user play?
+## Q1.5: How many distinct/unique songs did each user play?
 
 ~~~sql
-     SELECT U.name, COUNT(distinct P.song_id) AS num_of_plays
-        FROM users U
+     SELECT U.user_name, COUNT(distinct P.song_id) AS num_of_plays
+        FROM users U,
 		     plays P
         where 
              U.user_id = P.user_id
-		GROUP BY U.name;
+		GROUP BY U.user_name;
 ~~~
 
 How about getting `user_id` in the result
 
 ~~~sql
-     SELECT U.name, U.user_id, COUNT(distinct P.song_id) AS num_of_plays
-        FROM users U
+     SELECT U.user_name, U.user_id, COUNT(distinct P.song_id) AS num_of_plays
+        FROM users U,
 		     plays P
         where 
              U.user_id = P.user_id
-		GROUP BY U.name, U.user_id;
+		GROUP BY U.user_name, U.user_id;
 ~~~
 
 How about just getting by `user_id` only in the result
 
 ~~~sql
      SELECT U.user_id, COUNT(distinct P.song_id) AS num_of_plays
-        FROM users U
+        FROM users U,
 		     plays P
         where 
              U.user_id = P.user_id
 		GROUP BY U.user_id;
 ~~~
 
-## Q2: What are the titles and genres of the songs played by Alice?
+## Q2: What are the titles and genres of the songs played by Alex?
 
 	1. we need to find the titles and genres of 
-	   songs that Alice jammed to.
+	   songs that Alex jammed to.
 
     2. Here’s how we’re going to break it down: 
        we’ll be diving into the ‘users’, ‘plays’, and ‘songs’ 
@@ -289,7 +289,7 @@ SELECT S.title, S.genre
    FROM users U
    INNER JOIN plays P  ON U.user_id = P.user_id
    INNER JOIN songs S  ON P.song_id = S.song_id
-   WHERE U.name = 'Alice';
+   WHERE U.user_name = 'Alex';
 ~~~
 
 OR
@@ -304,7 +304,7 @@ SELECT S.title, S.genre
    WHERE 
          U.user_id = P.user_id AND
          P.song_id = S.song_id AND
-         U.name = 'Alice';
+         U.user_name = 'Alex';
 ~~~
 
 Output:
@@ -334,7 +334,7 @@ Output:
 	with the WHERE clause, focusing squarely on his tracks.
 	
 ~~~sql
-SELECT u.name
+SELECT u.user_name
 FROM users U
 
 INNER JOIN plays P
@@ -349,7 +349,7 @@ WHERE s.artist = 'Ed Sheeran';
 OR
 
 ~~~sql
-SELECT u.name
+SELECT u.user_name
 FROM 
      users U,
      plays P,
@@ -359,6 +359,23 @@ WHERE
      P.song_id = S.song_id AND
      s.artist = 'Ed Sheeran';
 ~~~
+
+Find Distinct users
+
+~~~sql
+SELECT distinct u.user_name
+FROM users U
+
+INNER JOIN plays P
+ON U.user_id = P.user_id
+
+INNER JOIN songs S
+ON P.song_id = S.song_id
+
+WHERE s.artist = 'Ed Sheeran';
+~~~
+
+
 
 ## Q4: Which songs have not been played by any users?
 
@@ -396,7 +413,7 @@ WHERE
 Here is the SQL query:
 
 ~~~sql
-      SELECT S.title, S.artist
+      SELECT S.song_id, S.title, S.artist
          FROM songs S
          LEFT JOIN plays P
          ON s.song_id = p.song_id
@@ -427,7 +444,7 @@ Here is the SQL query:
 Here is the SQL query:
 
 ~~~sql
-SELECT U.name, U.email
+SELECT U.user_name, U.email
 FROM users U
 INNER JOIN plays P
 ON U.user_id = P.user_id
@@ -438,7 +455,7 @@ AND p.device = 'mobile';
 OR
 
 ~~~sql
-SELECT U.name, U.email
+SELECT U.user_name, U.email
 FROM 
      users U,
      plays P
@@ -447,6 +464,32 @@ WHERE
      U.plan = 'premium'    AND
      P.device = 'mobile';
 ~~~
+
+Find Distinct users
+
+~~~sql
+SELECT distinct U.user_name, U.email
+FROM users U
+INNER JOIN plays P
+ON U.user_id = P.user_id
+WHERE U.plan = 'premium'
+AND p.device = 'mobile';
+~~~
+
+OR
+
+~~~sql
+SELECT distinct U.user_name, U.email
+FROM 
+     users U,
+     plays P
+WHERE
+     U.user_id = P.user_id AND
+     U.plan = 'premium'    AND
+     P.device = 'mobile';
+~~~
+
+
 
 ## Q6: Prerequisite: INTERSECT Clause
 
@@ -511,9 +554,9 @@ mysql> TABLE a INTERSECT TABLE c;
 1 row in set (0.00 sec)
 ~~~
 
-## Q6: Which songs have been played by both Alice and Bob?
+## Q6: Which songs have been played by both Alex and Jane?
 
-	1. So, identifying the songs that both Alice and Bob 
+	1. So, identifying the songs that both Alex and Jane 
 	   have rocked out to? —
 	
 	2. We’re going to sift through the 
@@ -525,7 +568,7 @@ mysql> TABLE a INTERSECT TABLE c;
 
 	But that’s just the start. 
 	
-	4. To pinpoint our musical duo, Alice and Bob, 
+	4. To pinpoint our musical duo, Alex and Jane, 
 	   we’ll bring in the WHERE clause, filtering 
 	   the data to focus exclusively on them.
 
@@ -545,7 +588,7 @@ INNER JOIN plays p
 ON u.user_id = p.user_id
 INNER JOIN songs s
 ON p.song_id = s.song_id
-WHERE u.name = 'Alice'
+WHERE u.user_name = 'Alex'
 
 INTERSECT
 
@@ -555,7 +598,7 @@ INNER JOIN plays p
 ON u.user_id = p.user_id
 INNER JOIN songs s
 ON p.song_id = s.song_id
-WHERE u.name = 'Bob';
+WHERE u.user_name = 'Jane';
 ~~~
 
 OR
@@ -568,7 +611,7 @@ FROM users u,
 WHERE
       u.user_id = p.user_id  AND
       p.song_id = s.song_id  AND
-      u.name = 'Alice'
+      u.user_name = 'Alex'
 
 INTERSECT
 
@@ -579,7 +622,7 @@ FROM users u,
 WHERE
       u.user_id = p.user_id  AND
       p.song_id = s.song_id  AND
-      u.name = 'Bob';
+      u.user_name = 'Jane';
 ~~~
 
 # Q7: Which users have played songs from different genres?
@@ -608,13 +651,13 @@ Here is the SQL query:
 --
 -- select with count of genre
 --
-SELECT u.name, u.country, COUNT(DISTINCT s.genre)
+SELECT u.user_name, u.country, COUNT(DISTINCT s.genre)
 FROM users u
 INNER JOIN plays p
 ON u.user_id = p.user_id
 INNER JOIN songs s
 ON p.song_id = s.song_id
-GROUP BY u.name, u.country
+GROUP BY u.user_name, u.country
 HAVING COUNT(DISTINCT s.genre) > 1;
 ~~~
 
@@ -623,13 +666,13 @@ HAVING COUNT(DISTINCT s.genre) > 1;
 --
 -- select without count of genre
 --
-SELECT u.name, u.country
+SELECT u.user_name, u.country
 FROM users u
 INNER JOIN plays p
 ON u.user_id = p.user_id
 INNER JOIN songs s
 ON p.song_id = s.song_id
-GROUP BY u.name, u.country
+GROUP BY u.user_name, u.country
 HAVING COUNT(DISTINCT s.genre) > 1;
 ~~~
 
@@ -639,7 +682,7 @@ OR
 --
 -- select with count of genre
 --
-SELECT u.name, u.country, COUNT(DISTINCT s.genre)
+SELECT u.user_name, u.country, COUNT(DISTINCT s.genre)
 FROM users u,
      plays p,
      songs s
@@ -647,7 +690,7 @@ WHERE
       u.user_id = p.user_id  AND
       p.song_id = s.song_id  
 
-GROUP BY u.name, u.country
+GROUP BY u.user_name, u.country
 
 HAVING COUNT(DISTINCT s.genre) > 1;
 ~~~
