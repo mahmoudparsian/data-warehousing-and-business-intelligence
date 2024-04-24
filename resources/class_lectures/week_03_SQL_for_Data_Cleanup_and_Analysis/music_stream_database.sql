@@ -4,7 +4,7 @@ use music;
 -- This table defines users of the music streaming service
 --
 --	user_id: The unique identifier of the user
---	name: The name of the user
+--	user_name: The name of the user
 --	email: The email address of the user
 --	country: The country where the user is located
 --	plan: The subscription plan of the user, either ‘free’ or ‘premium’
