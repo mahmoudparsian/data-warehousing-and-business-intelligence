@@ -191,7 +191,19 @@ mysql> select E.ename, E.dept_id, D.dept_name
 	to answer some questions based on the 
 	data from the case study.
 
+## Q0: How many songs did each user play?
+
+Return result by user_id
+
+~~~sql		
+     SELECT user_id, COUNT(play_id) AS num_of_plays
+		from plays 
+		GROUP BY user_id;
+~~~
+
+
 ## Q1: How many songs did each user play?
+Return result by user_name
 
 	1. We’re going to look at the number of 
 	   times users have hit play.
@@ -315,7 +327,60 @@ Output:
 		Thunder         Rock
 		...
 
-		
+## Q2.5: What are the distinct (titles and genres) of the songs played by Alex?
+
+~~~sql
+SELECT S.title, S.genre, count(*) as count
+   FROM users U
+   INNER JOIN plays P  ON U.user_id = P.user_id
+   INNER JOIN songs S  ON P.song_id = S.song_id
+   WHERE U.user_name = 'Alex'
+   group by S.title, S.genre;
+   
++--------------------+---------+-------+
+| title              | genre   | count |
++--------------------+---------+-------+
+| The 1              | country |     3 |
+| Afterglow          | country |     2 |
+| Please Please Me   | rock    |     5 |
+| 2step              | pop     |     3 |
+| The A Team         | pop     |     2 |
+| Requiem In D Minor | classic |     2 |
+| Piano Concerto     | classic |     3 |
++--------------------+---------+-------+
+7 rows in set (0.01 sec)
+~~~
+
+OR
+
+~~~sql
+-- Default JOIN = INNER JOIN
+SELECT S.title, S.genre, count(*) as count
+   FROM 
+       users U,
+       plays P,
+       songs S  
+   WHERE       
+        U.user_id = P.user_id AND
+        P.song_id = S.song_id AND
+        U.user_name = 'Alex'
+   group by S.title, S.genre;
+
++--------------------+---------+-------+
+| title              | genre   | count |
++--------------------+---------+-------+
+| The 1              | country |     3 |
+| Afterglow          | country |     2 |
+| Please Please Me   | rock    |     5 |
+| 2step              | pop     |     3 |
+| The A Team         | pop     |     2 |
+| Requiem In D Minor | classic |     2 |
+| Piano Concerto     | classic |     3 |
++--------------------+---------+-------+
+7 rows in set (0.01 sec)
+~~~
+
+	
 		
 ## Q3: Which users have played songs by Ed Sheeran?
 
@@ -334,6 +399,7 @@ Output:
 	with the WHERE clause, focusing squarely on his tracks.
 	
 ~~~sql
+-- ALL user_name(s)
 SELECT u.user_name
 FROM users U
 
@@ -375,6 +441,41 @@ ON P.song_id = S.song_id
 WHERE s.artist = 'Ed Sheeran';
 ~~~
 
+## Q3.5 Find Distinct users and count
+
+Find Distinct users and count
+
+~~~sql
+SELECT u.user_name, count(*) as count
+FROM users U
+
+INNER JOIN plays P
+ON U.user_id = P.user_id
+
+INNER JOIN songs S
+ON P.song_id = S.song_id
+
+WHERE s.artist = 'Ed Sheeran'
+
+GROUP BY u.user_name;
+
++-----------+-------+
+| user_name | count |
++-----------+-------+
+| alex      |     5 |
+| jane      |     4 |
+| betty     |     4 |
+| rafa      |     6 |
+| ted       |     3 |
+| al        |     5 |
+| david     |     3 |
+| carlos    |     5 |
+| fiona     |     3 |
+| albert    |     3 |
++-----------+-------+
+10 rows in set (0.00 sec)
+~~~
+
 
 
 ## Q4: Which songs have not been played by any users?
@@ -413,12 +514,24 @@ WHERE s.artist = 'Ed Sheeran';
 Here is the SQL query:
 
 ~~~sql
+-- left table: songs
+-- right table: plays
+
       SELECT S.song_id, S.title, S.artist
          FROM songs S
          LEFT JOIN plays P
          ON s.song_id = p.song_id
 
          WHERE p.play_id IS NULL;
+~~~
+
+~~~sql
+-- for debugging and testing:
+
+      SELECT S.song_id, S.title, S.artist, P.play_id
+         FROM songs S
+         LEFT JOIN plays P
+         ON s.song_id = p.song_id
 ~~~
 
 
