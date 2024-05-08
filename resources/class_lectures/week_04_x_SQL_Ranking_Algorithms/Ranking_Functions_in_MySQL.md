@@ -793,6 +793,7 @@ In this SQL query:
 
 Running the query results in the following output:
 
+~~~sql
 SELECT
     id,
     document_id,
@@ -820,6 +821,7 @@ ORDER BY
 Even if you change the ordering of the result set, 
 the version numbers will remain the same:
 
+~~~sql
 SELECT
     id,
     document_id,
