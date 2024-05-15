@@ -1590,6 +1590,54 @@ id name score rank
 		An index on the score column would 
 		help performance on large tables.
 
+# `RANK()` vs. `DENSE_RANK()` vs. `ROW_NUMBER()`
+
+Consider the following table: scores
+
+~~~text
+first_name   last_name  points
+----------   ---------  ------
+Emyr         Downes     70
+Dina         Morin      70
+Evie-May     Boyer      80
+Nora         Parkinson  60
+Trystan      Oconnor    40
+Eryk         Myers      90
+Marlene      Duncan     90
+Marius       Powell     90
+Joanne       Goddard    50
+Rayhan       Williamson 90
+~~~
+
+Now consider the following SQL query:
+
+~~~sql
+SELECT
+  RANK() OVER(ORDER BY points DESC) AS rank,
+  DENSE_RANK() OVER(ORDER BY points DESC) AS dense_rank,
+  ROW_NUMBER() OVER(ORDER BY points DESC) AS row_number,
+  first_name,
+  last_name,
+  points
+FROM scores;
+~~~
+
+Result:
+
+~~~text
+rank  dense_rank  row_number  first_name  last_name    points
+----  ----------  ----------  ----------  ---------    ------
+1     1           1           Marlene     Duncan       90
+1     1           2           Rayhan      Williamson   90
+1     1           3           Marius      Powell       90
+1     1           4           Eryk        Myers        90
+5     2           5           Evie-May    Boyer        80
+6     3           6           Emyr        Downes       70
+6     3           7           Dina        Morin        70
+8     4           8           Nora        Parkinson    60
+9     5           9           Joanne      Goddard      50
+10    6          10           Trystan     Oconnor      40
+~~~
 
 # References
 
@@ -1598,3 +1646,5 @@ id name score rank
 2. [MySQL RANK Function](https://www.mysqltutorial.org/mysql-window-functions/mysql-rank-function/)
 
 3. [Leaderboards and Rankings with SQL](https://medium.com/analytics-vidhya/leaderboards-and-rankings-with-sql-f0c7700d41d3)
+
+4. [How to Rank Rows in SQL: A Complete Guide](https://learnsql.com/blog/how-to-rank-rows-in-sql/)
