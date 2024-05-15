@@ -613,7 +613,7 @@ mysql> SELECT *,
 12 rows in set (0.00 sec)
 ~~~
 
-~~~
+~~~sql
 mysql> SELECT
     ->   user_id,
     ->   SUM(likes)
@@ -866,6 +866,729 @@ ORDER BY
 	   new possibilities for analyzing and organizing 
 	   your data in MySQL databases.
 
+# Rank students based on their average in MySQL
+
+	I have been researching and trying various 
+	queries to get this to work. What I want to 
+	happen is to rank each student based on their 
+	average which will be calculated by using 
+	AVG(grade) and this will be grouped by student_id. 
+	
+	The table with the necessary info is as follows:
+
+		assessment_id | student_id | grade | subject_id
+
+What I would like to see after the query is:
+
+	student_id | AVG(grade) | rank
+
+
+~~~sql
+SELECT student_id, AVG(grade) as average, 
+       RANK() OVER (ORDER BY AVG(grade) DESC) AS student_rank
+FROM grades
+GROUP BY student_id
+~~~
+
+
+# Rankings with SQL: A Complete Example
+
+Scenario
+
+	1. Assume that you are developing an online 
+	   game like QuizUp, and it allows users to 
+	   register and play the game. 
+	
+	2. A registered user can participate in 
+	   quizzes under topics. 
+	
+	3. A user will score every time plays a quiz, 
+	   but only the highest score will be taken 
+	   into account when ranking. 
+	
+	4. The users will be ranked within each topic, 
+	   and, under a particular topic, users will be 
+	   further ranked under country too. 
+	
+	For example, 
+		if you are playing the game under topic 
+		‘Databases’ then you will have a rank 
+		for Database topic (a global rank among 
+		all the users who have played this topic), 
+		and a rank within the country you play 
+		(assuming you are in the US, and you will 
+		have a country rank or continent/globa rank).
+
+	5. In the dashboard (or app), all users who at 
+	   least once participated in a quiz under a 
+	   particular topic will be shown in the topic 
+	   leaderboard. Something like this.
+
+<img src="https://miro.medium.com/v2/resize:fit:1280/format:webp/1*WYLoLmpA_7dA_S0fJbyR3A.jpeg"/>
+
+
+Schema:
+
+~~~sql
+create table scores(
+   user_id  INT, 
+   country_id TEXT,
+   topic_id INT,
+   score INT
+);
+
+Populate table:
+
+~~~sql
+insert into scores(user_id, country_id, topic_id, score)
+values
+(4, 'US',  101, 72),
+(3, 'CAN', 101, 30),
+(6, 'US',  101, 72),
+(4, 'US',  101, 49),
+(1, 'CAN', 101, 53),
+(8, 'US',  101, 67),
+(5, 'CAN', 101, 6),
+(7, 'CAN', 101, 87),
+(2, 'US',  101, 41),
+(3, 'CAN', 101, 76),
+(9, 'GER', 101, 87),
+(9, 'GER', 101, 89);
+~~~
+
+View schema:
+
+~~~sql
+mysql> desc scores;
++------------+------+------+-----+---------+-------+
+| Field      | Type | Null | Key | Default | Extra |
++------------+------+------+-----+---------+-------+
+| user_id    | int  | YES  |     | NULL    |       |
+| country_id | text | YES  |     | NULL    |       |
+| topic_id   | int  | YES  |     | NULL    |       |
+| score      | int  | YES  |     | NULL    |       |
++------------+------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+~~~
+
+View data:
+
+~~~sql
+mysql> select * from scores;
++---------+------------+----------+-------+
+| user_id | country_id | topic_id | score |
++---------+------------+----------+-------+
+|       4 | US         |      101 |    72 |
+|       3 | CAN        |      101 |    30 |
+|       6 | US         |      101 |    72 |
+|       4 | US         |      101 |    49 |
+|       1 | CAN        |      101 |    53 |
+|       8 | US         |      101 |    67 |
+|       5 | CAN        |      101 |     6 |
+|       7 | CAN        |      101 |    87 |
+|       2 | US         |      101 |    41 |
+|       3 | CAN        |      101 |    76 |
+|       9 | GER        |      101 |    87 |
+|       9 | GER        |      101 |    89 |
++---------+------------+----------+-------+
+12 rows in set (0.00 sec)
+~~~
+
+Our Schema
+
+	1. Let’s keep the schema simple for this example. 
+	   We have only one table called, scores. 
+	   
+	2. And it has the recorded scores for each user 
+	   every time he/she played a quiz, and for the 
+	   convenience, we assume that against each user 
+	   we have his/her country as well, based on the 
+	   logged-in country at the time of play or account 
+	   information given in advance. 
+	
+	3. The below table shows a sample set of data we 
+	   will be going to rank under the topic id, 101.
+
+~~~sql
+mysql> select * from scores;
++---------+------------+----------+-------+
+| user_id | country_id | topic_id | score |
++---------+------------+----------+-------+
+|       4 | US         |      101 |    72 |
+|       3 | CAN        |      101 |    30 |
+|       6 | US         |      101 |    72 |
+|       4 | US         |      101 |    49 |
+|       1 | CAN        |      101 |    53 |
+|       8 | US         |      101 |    67 |
+|       5 | CAN        |      101 |     6 |
+|       7 | CAN        |      101 |    87 |
+|       2 | US         |      101 |    41 |
+|       3 | CAN        |      101 |    76 |
+|       9 | GER        |      101 |    87 |
+|       9 | GER        |      101 |    89 |
++---------+------------+----------+-------+
+12 rows in set (0.00 sec)
+~~~
+
+## Step 1: Aggregate
+
+	First, let's aggregate all the scores per 
+	user and team. So, that we will have the highest 
+	score for each user against his/her country.
+
+~~~sql
+SELECT
+  user_id,
+  country_id,
+  MAX(score) AS high_score
+FROM scores
+WHERE topic_id = 101
+GROUP BY user_id, country_id
+~~~
+
+MySQL run:
+
+~~~sql
+mysql> SELECT
+    ->   user_id,
+    ->   country_id,
+    ->   MAX(score) AS high_score
+    -> FROM scores
+    -> WHERE topic_id = 101
+    -> GROUP BY user_id, country_id;
++---------+------------+------------+
+| user_id | country_id | high_score |
++---------+------------+------------+
+|       4 | US         |         72 |
+|       3 | CAN        |         76 |
+|       6 | US         |         72 |
+|       1 | CAN        |         53 |
+|       8 | US         |         67 |
+|       5 | CAN        |          6 |
+|       7 | CAN        |         87 |
+|       2 | US         |         41 |
+|       9 | GER        |         89 |
++---------+------------+------------+
+9 rows in set (0.00 sec)
+~~~
+
+	NOTES:
+		1. We have used country_id for grouping 
+		because when we’re going to do the ranking, 
+		we need to have the country_id field for 
+		the parent query. 
+		
+		2. Also, if the game rules have changed 
+		to take total score instead of the highest 
+		score, simply, only we have to change the 
+		aggregate function from MAX to SUM.
+		
+
+## Step 2: Rankings
+
+		Now we want to get the rank of each user 
+		relative to each country the user belongs to. 
+		
+		The expected result should look like below.
+	
+~~~sql
+SELECT
+  t.user_id,
+  t.country_id,
+  t.high_score,
+  RANK() OVER (PARTITION BY t.country_id 
+               ORDER BY t.high_score DESC) 
+               AS country_rank
+FROM (
+        SELECT
+          user_id,
+          country_id,
+          MAX(score) AS high_score
+        FROM scores
+        WHERE topic_id = 101
+        GROUP BY user_id, country_id
+     ) AS t
+ORDER BY t.country_id DESC, country_rank;
+~~~
+
+MySQL run:
+
+~~~sql
+mysql> SELECT
+    ->   t.user_id,
+    ->   t.country_id,
+    ->   t.high_score,
+    ->   RANK() OVER (PARTITION BY t.country_id
+    ->                ORDER BY t.high_score DESC) 
+    ->        AS country_rank
+    -> FROM (
+    ->         SELECT
+    ->           user_id,
+    ->           country_id,
+    ->           MAX(score) AS high_score
+    ->         FROM scores
+    ->         WHERE topic_id = 101
+    ->         GROUP BY user_id, country_id
+    ->      ) AS t
+    -> ORDER BY t.country_id DESC, country_rank;
++---------+------------+------------+--------------+
+| user_id | country_id | high_score | country_rank |
++---------+------------+------------+--------------+
+|       4 | US         |         72 |            1 |
+|       6 | US         |         72 |            1 |
+|       8 | US         |         67 |            3 |
+|       2 | US         |         41 |            4 |
+|       9 | GER        |         89 |            1 |
+|       7 | CAN        |         87 |            1 |
+|       3 | CAN        |         76 |            2 |
+|       1 | CAN        |         53 |            3 |
+|       5 | CAN        |          6 |            4 |
++---------+------------+------------+--------------+
+9 rows in set (0.00 sec)
+~~~
+
+	NOTES: 
+		Here, what we do is, we take the query in 
+		Step-1 as a derived table for the new query, 
+		by enclosing it inside the FROM clause. Check 
+		the new projection clause.
+
+		RANK() OVER 
+			(PARTITION BY t.country_id ORDER BY t.high_score DESC) 
+				AS country_rank
+
+
+
+### `DENSE_RANK`: 
+		rows within equal rank will have the same 
+		rank and will have no gaps. i.e. Consider 
+		three users U1, U2 and U3 having high score 
+		80, 80, 78 respectively. 
+		
+		Using DENSE_RANK will have rankings 1, 1, 2 
+		for three users.
+
+### `RANK`: 
+		rows within equal ranks will have the same 
+		rank, but there can be gaps in rank values. 
+		
+		FOR EXAMPLE: if two users get the same ranking,
+		say 4th, then the next user will be ranked 6th 
+		because two users are in 4th, hence rank 5th 
+		is not available.
+
+
+## Getting Global Ranks
+
+		As said earlier, assume we need to show 
+		
+		1. user’s global rank in the dashboard along 
+		
+		2. with an individual’s country rank as well. 
+		
+		First, let’s see the query for it.
+
+~~~sql
+SELECT
+  t.user_id,
+  t.country_id,
+  t.high_score,
+  RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+FROM (
+  SELECT
+    user_id,
+    country_id,
+    MAX(score) AS high_score
+  FROM scores
+  WHERE topic_id = 101
+  GROUP BY user_id, country_id
+) AS t
+ORDER BY global_rank;
+~~~
+
+MySQL run:
+
+~~~sql
+mysql> SELECT
+    ->   t.user_id,
+    ->   t.country_id,
+    ->   t.high_score,
+    ->   RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+    -> FROM (
+    ->   SELECT
+    ->     user_id,
+    ->     country_id,
+    ->     MAX(score) AS high_score
+    ->   FROM scores
+    ->   WHERE topic_id = 101
+    ->   GROUP BY user_id, country_id
+    -> ) AS t
+    -> ORDER BY global_rank;
++---------+------------+------------+-------------+
+| user_id | country_id | high_score | global_rank |
++---------+------------+------------+-------------+
+|       9 | GER        |         89 |           1 |
+|       7 | CAN        |         87 |           2 |
+|       3 | CAN        |         76 |           3 |
+|       4 | US         |         72 |           4 |
+|       6 | US         |         72 |           4 |
+|       8 | US         |         67 |           6 |
+|       1 | CAN        |         53 |           7 |
+|       2 | US         |         41 |           8 |
+|       5 | CAN        |          6 |           9 |
++---------+------------+------------+-------------+
+9 rows in set (0.00 sec)
+~~~
+
+	This is very similar to the above query 
+	in Step-2, except 
+	
+			we REMOVED THE PARTITION CLAUSE. 
+	
+	What happens here is that, as soon as we removed 
+	the partition clause, the query will not have any 
+	partition, but only ONE PARTITION: the whole table. 
+	
+			but only ONE PARTITION: the whole table. 
+
+	The only and default partition that exists for the 
+	query, is the whole table. So, when the RANK is applied, 
+	it calculates the rank relative to the whole table. 
+	
+	Hence we get the global rank. That means the query 
+	will rank users regardless of the team. Here is the 
+	result of the above query.
+
+
+## Two Birds with One Stone
+
+	1. In the dashboard, or from your business 
+	   layer, do you really think you want to call 
+	   twice to get the two rankings, and then combine 
+	   for each user
+
+				The answer is NO!
+
+	2. You don’t really want to write two SQL queries, 
+	
+	2.1 one to get team ranks, and 
+	
+	2.2 one to get global ranks. 
+	
+	In fact, you can get both ranks in a single query.
+
+	That is the beauty of window functions!
+
+	You can have as many partitions as you want 
+	on each projection clause. One partition 
+	clause does not affect to other projection clauses. 
+	They are totally independent.
+
+So, the combined query should look like this.
+
+~~~sql
+SELECT
+  t.user_id,
+  t.country_id,
+  t.high_score,
+  RANK() OVER (PARTITION BY t.country_id 
+               ORDER BY t.high_score DESC) AS country_rank,
+  RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+FROM (
+  SELECT
+    user_id,
+    country_id,
+    MAX(score) AS high_score
+  FROM scores
+  WHERE topic_id = 101
+  GROUP BY user_id, country_id
+) AS t;
+~~~
+
+	NOTES:
+	
+			Now we have the desired result with 
+			output like below having calculated 
+			both ranks in two columns.
+
+MySQL run:
+
+~~~sql
+mysql> SELECT
+    ->   t.user_id,
+    ->   t.country_id,
+    ->   t.high_score,
+    ->   RANK() OVER (PARTITION BY t.country_id
+    ->                ORDER BY t.high_score DESC) AS country_rank,
+    ->   RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+    -> FROM (
+    ->   SELECT
+    ->     user_id,
+    ->     country_id,
+    ->     MAX(score) AS high_score
+    ->   FROM scores
+    ->   WHERE topic_id = 101
+    ->   GROUP BY user_id, country_id
+    -> ) AS t;
++---------+------------+------------+--------------+-------------+
+| user_id | country_id | high_score | country_rank | global_rank |
++---------+------------+------------+--------------+-------------+
+|       9 | GER        |         89 |            1 |           1 |
+|       7 | CAN        |         87 |            1 |           2 |
+|       3 | CAN        |         76 |            2 |           3 |
+|       4 | US         |         72 |            1 |           4 |
+|       6 | US         |         72 |            1 |           4 |
+|       8 | US         |         67 |            3 |           6 |
+|       1 | CAN        |         53 |            3 |           7 |
+|       2 | US         |         41 |            4 |           8 |
+|       5 | CAN        |          6 |            4 |           9 |
++---------+------------+------------+--------------+-------------+
+9 rows in set (0.00 sec)
+~~~
+
+### Get Both Rankings of a Single User
+
+	You might be tempted to think that, 
+	it is trivial to get the ranks of a 
+	single user by filtering only the record 
+	for that user id. In simpler terms, just 
+	add a where clause within the condition, 
+	user_id = ? before order by clause in the 
+	outer query, right?
+
+	Wrong!
+
+	If you do so, you will NOT be able to 
+	calculate rankings. For all users, it 
+	will always show team rank as 1st and 
+	global rank as 1st, which is obviously wrong.
+
+	The reason for this behavior is very simple.
+
+		In SQL world, WHERE clause gets executed 
+		before the SELECT clause.
+
+		Therefore, when the records are going 
+		to be partitioning, which is inside the 
+		projection, there is only one record, and 
+		it is the record for the filtered users. 
+		
+		But to calculate rankings, we need high_score(s) 
+		for every user. You can neither add the user 
+		filtering inside the derived table nor the outer query.
+
+	So, where do we put the filtering?
+
+	Easy! Just enclose this query inside another 
+	outer query, and filter out the user from enclosing 
+	query. See below.
+
+~~~sql
+SELECT
+    *
+FROM (
+  SELECT
+    t.user_id,
+    t.country_id,
+    t.high_score,
+    RANK() OVER (PARTITION BY t.country_id 
+                 ORDER BY t.high_score DESC) AS country_rank,
+    RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+  FROM (
+    SELECT
+      user_id,
+      country_id,
+      MAX(score) AS high_score
+    FROM scores
+    WHERE topic_id = 101
+    GROUP BY user_id, country_id
+  ) AS t
+) AS rt
+WHERE
+    rt.user_id = 8;
+~~~
+
+MySQL run:
+
+~~~sql    
+mysql> SELECT
+    ->     *
+    -> FROM (
+    ->   SELECT
+    ->     t.user_id,
+    ->     t.country_id,
+    ->     t.high_score,
+    ->     RANK() OVER (PARTITION BY t.country_id
+    ->                  ORDER BY t.high_score DESC) AS country_rank,
+    ->     RANK() OVER (ORDER BY t.high_score DESC) AS global_rank
+    ->   FROM (
+    ->     SELECT
+    ->       user_id,
+    ->       country_id,
+    ->       MAX(score) AS high_score
+    ->     FROM scores
+    ->     WHERE topic_id = 101
+    ->     GROUP BY user_id, country_id
+    ->   ) AS t
+    -> ) AS rt
+    -> WHERE
+    ->     rt.user_id = 8;
++---------+------------+------------+--------------+-------------+
+| user_id | country_id | high_score | country_rank | global_rank |
++---------+------------+------------+--------------+-------------+
+|       8 | US         |         67 |            3 |           6 |
++---------+------------+------------+--------------+-------------+
+1 row in set (0.01 sec)
+~~~
+
+### Three depths of SQL Query
+
+		Three depths of the above query show the 
+		three stages of result transformation to 
+		get rankings. i.e.
+
+			1. Aggregating: aggregate results first,
+
+			2. Ranking: then apply rankings, and
+
+			3. Filtering: filter out the necessary output.
+
+
+# MySQL `FIND_IN_SET()` Function
+
+Search for "q" within the list of strings:
+
+	SELECT FIND_IN_SET("q", "s,q,l")
+	
+Definition and Usage:
+
+	The `FIND_IN_SET()` function returns the 
+	position of a string within a list of strings.
+
+Syntax
+
+	FIND_IN_SET(string, string_list)
+
+Return Values
+
+	1. If `string` is not found in `string_list`, 
+	   this function returns 0
+	   
+	2. If `string` or `string_list` is NULL, 
+	   this function returns NULL
+
+	3. If `string_list` is an empty string (""), 
+	   this function returns 0
+
+	Examples:
+	
+		FIND_IN_SET("a", "s,q,l") -> 0
+		
+		FIND_IN_SET("s", "s,q,l") -> 1
+		
+		FIND_IN_SET("q", "s,q,l") -> 2
+
+
+## `FIND_IN_SET()` Example: Get the rank of a user in a score table
+
+		I have a very simple MySQL table where 
+		I save highscores. It looks like that:
+
+
+		Id     Name     Score
+	
+	
+	So far so good. The question is: 
+	How do I get what's a users rank? 
+	
+	For example, I have a users Name or Id 
+	and want to get his rank, where all rows 
+	are ordinal ordered descending for the Score.
+
+An Example
+
+~~~text
+Id  Name    Score
+--  ----    -----
+1   Ida     100
+2   Boo     58
+3   Lala    88
+4   Bash    102
+5   Assem   99
+~~~
+
+	NOTES:
+	
+		1. In this very case, Assem's rank would be 3, 
+		   because he got the 3rd highest score.
+
+		2. The query should return one row, 
+		   which contains (only) the required Rank.
+
+		3. First understand `GROUP_CONCAT`:
+
+		GROUP_CONCAT( score ORDER BY score DESC )
+		
+		will return
+		
+		"102,100,99,88,58"
+		
+		FIND_IN_SET("102", "102,100,99,88,58") returns 1
+		FIND_IN_SET("100", "102,100,99,88,58") returns 2
+		FIND_IN_SET("99", "102,100,99,88,58")  returns 3
+		FIND_IN_SET("88", "102,100,99,88,58")  returns 4
+		FIND_IN_SET("58", "102,100,99,88,58")  returns 5
+		
+Solution:
+
+~~~sql
+SELECT id, name, score, 
+       FIND_IN_SET( score, 
+                    (SELECT GROUP_CONCAT( score ORDER BY score DESC ) 
+                     FROM scores 
+                    )
+                  ) AS rank
+FROM scores
+~~~
+
+gives this list:
+
+~~~text
+id name  score rank
+-- ----  ----- ----
+1  Ida   100   2
+2  Boo    58   5
+3  Lala   88   4
+4  Bash  102   1
+5  Assem  99   3
+~~~
+
+
+Getting a single person score:
+
+~~~sql
+SELECT id, name, score, 
+       FIND_IN_SET( score, (SELECT GROUP_CONCAT( score ORDER BY score DESC ) 
+                            FROM scores )
+                  ) AS rank
+FROM scores
+WHERE name =  'Assem'
+~~~
+
+Gives this result:
+
+~~~text
+id name score rank
+-- ---- ----- ----
+5  Assem   99    3
+~~~
+
+		You'll have one scan to get the score 
+		list, and another scan or seek to do 
+		something useful with it. 
+		
+		An index on the score column would 
+		help performance on large tables.
 
 
 # References
@@ -873,3 +1596,5 @@ ORDER BY
 1. [MySQL | Ranking Functions](https://www.geeksforgeeks.org/mysql-ranking-functions/)
 
 2. [MySQL RANK Function](https://www.mysqltutorial.org/mysql-window-functions/mysql-rank-function/)
+
+3. [Leaderboards and Rankings with SQL](https://medium.com/analytics-vidhya/leaderboards-and-rankings-with-sql-f0c7700d41d3)
