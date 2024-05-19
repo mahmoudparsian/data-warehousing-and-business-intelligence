@@ -1,7 +1,4 @@
-drop database BikeStores;
-create database BikeStores;
-
-use BikeStores;
+use bike_stores;
 
 -- -------------
 -- create tables

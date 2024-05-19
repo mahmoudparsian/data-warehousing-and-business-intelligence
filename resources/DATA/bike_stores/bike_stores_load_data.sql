@@ -1,4 +1,4 @@
-use BikeStores;
+use bike_stores;
 
 -- stores table --
 INSERT INTO stores(store_id, store_name, phone, email, street, city, state, zip_code)
