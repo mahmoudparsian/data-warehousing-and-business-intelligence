@@ -1,1 +1,1 @@
-create database BikeStores;
+create database bike_stores;
