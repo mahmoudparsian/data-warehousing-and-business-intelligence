@@ -1,6 +1,12 @@
 # Book Seller to Star Schema
 
 
+# Star Schema Example
+
+![](./star_schema_example.png)
+
+
+
 ## Sales table:
 
 ~~~sql
@@ -41,7 +47,6 @@ book_published    DATE
 ### Sales table => Star Schema tables
 
 ![](./star_schema_book.png)
-
 
 
 ## 1. Book table (as DIMENSION)
