@@ -638,5 +638,3 @@ SELECT Item,
        TotalOrderQty
 FROM Order_Items AS OI;
 ~~~
-
-

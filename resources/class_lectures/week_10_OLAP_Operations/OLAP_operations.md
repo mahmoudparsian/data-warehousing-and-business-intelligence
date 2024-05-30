@@ -1,6 +1,5 @@
 # OLAP Operations
 
-	
 	DEF: a cube has 3 dimentions.
 	
 	DEF: hypercube has at least 3 dimensions.
