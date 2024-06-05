@@ -75,6 +75,16 @@ What is a surrogate key in SQL?
 	4. It can be used only in the CRUD 
 	   (Create, Read, Update, Delete) operations.
 
+### What is a stored procedure?
+
+	A stored procedure is a prepared SQL code 
+	that you can save, so the code can be reused 
+	over and over again. So if you have an SQL query 
+	that you write over and over again, save it as 
+	a stored procedure, and then just call it to 
+	execute it.
+	
+
 ## Create a Stored Procedure
 
 ~~~sql
@@ -100,6 +110,7 @@ DELIMITER ;
 ## Populate Dates Table
 
 ~~~sql
+mysql> --              dateStart     dateEnd
 mysql> CALL fill_dates('2011-03-01','2011-03-30');
 Query OK, 1 row affected (0.02 sec)
 
@@ -426,10 +437,10 @@ mysql> select * from customer;
 
 ~~~sql
 create table Sales(
-   storeID int, 
-   itemID  int, 
-   custID  int, 
-   dateID  int,
+   storeID int, -- FK
+   itemID  int, -- FK
+   custID  int, -- FK
+   dateID  int, -- FK
    price   double
 );
 ~~~
